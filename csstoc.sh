@@ -2,6 +2,8 @@
 
 set -Eeuo pipefail
 trap cleanup SIGINT SIGTERM ERR EXIT
+dahfdaf
+adfhad
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
