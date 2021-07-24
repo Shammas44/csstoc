@@ -2,10 +2,6 @@
 
 set -Eeuo pipefail
 trap cleanup SIGINT SIGTERM ERR EXIT
-dahfdaf
-adfhad
-
-script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
 usage() {
     cat <<EOF
@@ -42,7 +38,6 @@ EOF
 
 cleanup() {
     trap - SIGINT SIGTERM ERR EXIT
-    # script cleanup here
     rm /tmp/csstoc.*
 }
 
@@ -59,32 +54,36 @@ msg() {
 }
 
 die() {
-    local msg=$1
-    local code=${2-1} # default exit status 1
-    msg "$msg"
-    if [ $msg == "0" ]; then
+    local _msg=$1
+    local _code=${2-1} # default exit status 1
+    if [ "$_msg" == "0" ]; then
         IFS="$OLDIFS"
         removeToc
         printToc
         setLastUpdateTime
-        cat $TMPFILE
+        if [ $standartOuput == true ]; then
+            cat $TMPFILE
+        else
+            cat $TMPFILE >"${param}"
+        fi
         cleanup
     fi
-    exit "$code"
+    exit "$_code"
 }
+
 parse_params() {
     # default values of variables set from params
-    flag=0
     param=''
+    standartOuput=false
 
     while :; do
-        case "${1-""}" in
+        case "${1-}" in
         -h | --help) usage ;;
         -v | --verbose) set -x ;;
         --no-color) NO_COLOR=1 ;;
-        -f | --flag) flag=1 ;; # example flag
-        -p | --param)          # example named parameter
-            param="${2-""}"
+        -s) standartOuput=true ;;
+        -p | --param) # example named parameter
+            param="${2-}"
             shift
             ;;
         -?*) die "Unknown option: $1" ;;
@@ -92,44 +91,19 @@ parse_params() {
         esac
         shift
     done
-
-    args=("$@")
-
-    # check required params and arguments
     [[ -z "${param-}" ]] && die "Missing required parameter: param"
-    [[ ${#args[@]} -eq 0 ]] && die "Missing script arguments"
 
     return 0
 }
 
 parse_params "$@"
 
-# while getopts ":hv" opt; do
-#     case ${opt} in
-#     h)
-#         usage
-#         exit
-#         ;;
-#     v)
-#         set -x
-#         ;;
-#     \?)
-#         echo -e "Unknow flags\n"
-#         usage
-#         exit
-#         ;;
-#     esac
-# done
-# setup_colors
-
 # script logic here
 
 TMPFILE=$(mktemp /tmp/csstoc.$(date +"%s"))
-cat $1 >>$TMPFILE
-# rm csstoc.*
+cat "${param}" >>$TMPFILE
 
-readonly VERSION='1.0'
-readonly EXTENSION=$(echo "${1}" | grep -o "\..*")
+readonly EXTENSION=$(echo "${param}" | grep -o "\..*")
 readonly FILENAME=$TMPFILE
 tocStartSymbol="<-- toc -->"
 tocStopSymbol="<-- tocstop -->"
@@ -140,6 +114,8 @@ if [ "$EXTENSION" == '.css' ]; then
 elif [ "$EXTENSION" == '.scss' ] || [ "$EXTENSION" == '.sass' ]; then
     commentIdentifier='\/\/'
     sassComment='\/\/ '
+else
+    die "Unknown extension $EXTENSION"
 fi
 
 h1=0
