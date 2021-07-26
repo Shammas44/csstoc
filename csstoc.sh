@@ -3,8 +3,8 @@
 set -Eeuo pipefail
 trap cleanup SIGINT SIGTERM ERR EXIT
 
-#usage display usage guide in the termnal
-#return void
+# usage display usage guide in the termnal
+# return void
 usage() {
     cat <<EOF
 Usage: $(basename "${BASH_SOURCE[0]}") [-h] [-v] [-f] -p param_value arg1 [arg2...]
@@ -37,16 +37,16 @@ etc.
 EOF
 }
 
-#cleanup remove tmp file where is stored to final output
-#return void
+# cleanup remove tmp file(s) where is stored the final output
+# return void
 cleanup() {
     trap - SIGINT SIGTERM ERR EXIT
     ls /tmp/ | grep csstoc. >/dev/null && rm /tmp/csstoc.*
 }
 
-#setup_colors enable colors if the termnal supports it
-#return void
-setup_colors() {
+# setupColors enable colors if the termnal supports it
+# return void
+setupColors() {
     if [[ -t 2 ]] && [[ -z "${NO_COLOR-}" ]] && [[ "${TERM-}" != "dumb" ]]; then
         NOFORMAT='\033[0m' RED='\033[0;31m' GREEN='\033[0;32m' ORANGE='\033[0;33m' BLUE='\033[0;34m' PURPLE='\033[0;35m' CYAN='\033[0;36m' YELLOW='\033[1;33m'
     else
@@ -54,14 +54,14 @@ setup_colors() {
     fi
 }
 
-#msg print a formated message to standart output
-#return the message
+# msg print a formated message to standart output
+# return the message
 msg() {
     echo >&2 -e "${1-}"
 }
 
-#die enable colors if the termnal supports it
-#return void
+# die enable colors if the termnal supports it
+# return void
 die() {
     local _msg=$1
     local _code=${2-1} # default exit status 1
@@ -81,11 +81,11 @@ die() {
     exit "$_code"
 }
 
-#parse_patams
-#@param $1 list on all flag set
-#@param $2 arguments to the -p flag
-#@return 0
-parse_params() {
+# parse_patams
+# @param $1 list on all flag set
+# @param $2 arguments to the -p flag
+# @return 0
+parseParams() {
     param=''
     standartOuput=false
 
@@ -112,9 +112,83 @@ parse_params() {
     return 0
 }
 
-parse_params "$@"
-setup_colors
-# script logic here
+# updateTitle
+# @param $1 the item to replace with the ligne number
+# @param $2 new number
+# @param $3 title hierachy
+# @return void
+function updateTitle() {
+    local _newNumber=$2
+    local _rowNumber=$(echo $1 | grep -o "^\d*")
+    local _replacement=$(echo $1 | grep -o "#.*" | grep -o -E -i "[a-z].*")
+    local _tocReplacement="${_newNumber} ${_replacement}"
+    _replacement="${commentIdentifier}${3}# \$${_newNumber} ${_replacement}"
+    sed -i '' $_rowNumber"s/.*/$_replacement/" $FILENAME
+    updateToc "${_tocReplacement}" "${_newNumber}" "${3}"
+}
+
+# updateToc generate the new toc as a string
+# @param $1 the title
+# @param $2 the number
+# @param $3 title hierachy
+# @return void
+function updateToc() {
+    case "${3}" in
+    1)
+        local str=""
+        ;;
+    2)
+        local str="\t- "
+        ;;
+    3)
+        local str="\t\t- "
+        ;;
+    4)
+        local str="\t\t\t- "
+        ;;
+    esac
+    output+=("${str}${1}")
+}
+
+# printToc refresh toc in source file
+# return void
+function printToc() {
+    local i=$(($summaryStartRowNumber + 1))
+    local size=$((${#output[@]} - 1))
+    for value in "${output[@]}"; do
+        sed -i '' $i"s/.*/${sassComment}${value} \n/" $FILENAME
+        i=$(($i + 1))
+    done
+    # display tocstop symbol in the current file
+    sed -i '' $i"s/.*/${sassComment}${tocStopSymbol}/" $FILENAME
+}
+
+# removeToc remove toc in the current file
+# return void
+function removeToc() {
+    local _diff=$((${summaryEndRowNumber} - ${summaryStartRowNumber}))
+    if [ $_diff != 1 ]; then
+        local firstLineToRemove=$(($summaryStartRowNumber + 1))
+        local lastLineToRemove=$(($summaryEndRowNumber - 1))
+        sed -i '' -e "${firstLineToRemove},${lastLineToRemove}d" "${FILENAME}"
+    fi
+}
+
+# setLastUpdateTime set time of the last writing in the current file
+# return void
+function setLastUpdateTime() {
+    local _lastTime=$(grep -o -n -E "Last update:" <"${FILENAME}")
+    if [ -n "$_lastTime" ]; then
+        local _rowNumber=$(echo $_lastTime | grep -o -E "^\d*")
+        local _currentTime=$(date +"%D %T")
+        _currentTime=$(echo $_currentTime | sed 's/\//:/g')
+        sed -i '' $_rowNumber"s/.*/${sassComment}Last update: $_currentTime/" $FILENAME
+    fi
+}
+
+# script logic start here
+parseParams "$@"
+setupColors
 
 TMPFILE=$(mktemp /tmp/csstoc.$(date +"%s"))
 cat "${param}" >>$TMPFILE
@@ -144,80 +218,6 @@ titles=($(grep -o -n -E "$commentIdentifier\d#.*" <"${FILENAME}"))
 summaryStartRowNumber=$(grep -o -n -i "$tocStartSymbol" <"${FILENAME}" | head -n 1 | cut -f1 -d:)
 summaryEndRowNumber=$(grep -o -n "$tocStopSymbol" <"${FILENAME}" | head -n 1 | cut -f1 -d:)
 output=()
-
-#updateTitle
-#@param $1 the item to replace with the ligne number
-#@param $2 new number
-#@param $3 title hierachy
-#@return void
-function updateTitle() {
-    local _newNumber=$2
-    local _rowNumber=$(echo $1 | grep -o "^\d*")
-    local _replacement=$(echo $1 | grep -o "#.*" | grep -o -E -i "[a-z].*")
-    local _tocReplacement="${_newNumber} ${_replacement}"
-    _replacement="${commentIdentifier}${3}# \$${_newNumber} ${_replacement}"
-    sed -i '' $_rowNumber"s/.*/$_replacement/" $FILENAME
-    updateToc "${_tocReplacement}" "${_newNumber}" "${3}"
-}
-
-#updateToc generate the new toc as a string
-#@param $1 the title
-#@param $2 the number
-#@param $3 title hierachy
-#@return void
-function updateToc() {
-    case "${3}" in
-    1)
-        local str=""
-        ;;
-    2)
-        local str="\t- "
-        ;;
-    3)
-        local str="\t\t- "
-        ;;
-    4)
-        local str="\t\t\t- "
-        ;;
-    esac
-    output+=("${str}${1}")
-}
-
-#printToc refresh toc in source file
-#return void
-function printToc() {
-    local i=$(($summaryStartRowNumber + 1))
-    local size=$((${#output[@]} - 1))
-    for value in "${output[@]}"; do
-        sed -i '' $i"s/.*/${sassComment}${value} \n/" $FILENAME
-        i=$(($i + 1))
-    done
-    #display tocstop symbol in the current file
-    sed -i '' $i"s/.*/${sassComment}${tocStopSymbol}/" $FILENAME
-}
-
-#removeToc remove toc in the current file
-#return void
-function removeToc() {
-    local _diff=$((${summaryEndRowNumber} - ${summaryStartRowNumber}))
-    if [ $_diff != 1 ]; then
-        local firstLineToRemove=$(($summaryStartRowNumber + 1))
-        local lastLineToRemove=$(($summaryEndRowNumber - 1))
-        sed -i '' -e "${firstLineToRemove},${lastLineToRemove}d" "${FILENAME}"
-    fi
-}
-
-#setLastUpdateTime set time of the last writing in the current file
-#return void
-function setLastUpdateTime() {
-    local _lastTime=$(grep -o -n -E "Last update:" <"${FILENAME}")
-    if [ -n "$_lastTime" ]; then
-        local _rowNumber=$(echo $_lastTime | grep -o -E "^\d*")
-        local _currentTime=$(date +"%D %T")
-        _currentTime=$(echo $_currentTime | sed 's/\//:/g')
-        sed -i '' $_rowNumber"s/.*/${sassComment}Last update: $_currentTime/" $FILENAME
-    fi
-}
 
 for item in "${titles[@]}"; do
     titleNumber=$(echo "${item}" | grep -E -o "${commentIdentifier}\d#" | grep -E -o '\d')
