@@ -3,6 +3,8 @@
 set -Eeuo pipefail
 trap cleanup SIGINT SIGTERM ERR EXIT
 
+#usage display usage guide in the termnal
+#return void
 usage() {
     cat <<EOF
 Usage: $(basename "${BASH_SOURCE[0]}") [-h] [-v] [-f] -p param_value arg1 [arg2...]
@@ -33,14 +35,17 @@ Level 2 Title:
 
 etc.
 EOF
-    exit
 }
 
+#cleanup remove tmp file where is stored to final output
+#return void
 cleanup() {
     trap - SIGINT SIGTERM ERR EXIT
-    rm /tmp/csstoc.*
+    ls /tmp/ | grep csstoc. >/dev/null && rm /tmp/csstoc.*
 }
 
+#setup_colors enable colors if the termnal supports it
+#return void
 setup_colors() {
     if [[ -t 2 ]] && [[ -z "${NO_COLOR-}" ]] && [[ "${TERM-}" != "dumb" ]]; then
         NOFORMAT='\033[0m' RED='\033[0;31m' GREEN='\033[0;32m' ORANGE='\033[0;33m' BLUE='\033[0;34m' PURPLE='\033[0;35m' CYAN='\033[0;36m' YELLOW='\033[1;33m'
@@ -49,10 +54,14 @@ setup_colors() {
     fi
 }
 
+#msg print a formated message to standart output
+#return the message
 msg() {
     echo >&2 -e "${1-}"
 }
 
+#die enable colors if the termnal supports it
+#return void
 die() {
     local _msg=$1
     local _code=${2-1} # default exit status 1
@@ -67,18 +76,25 @@ die() {
             cat $TMPFILE >"${param}"
         fi
         cleanup
+        msg "\n ${GREEN}csstoc successfully terminated${NOFORMAT}"
     fi
     exit "$_code"
 }
 
+#parse_patams
+#@param $1 list on all flag set
+#@param $2 arguments to the -p flag
+#@return 0
 parse_params() {
-    # default values of variables set from params
     param=''
     standartOuput=false
 
     while :; do
         case "${1-}" in
-        -h | --help) usage ;;
+        -h | --help)
+            usage
+            exit
+            ;;
         -v | --verbose) set -x ;;
         --no-color) NO_COLOR=1 ;;
         -s) standartOuput=true ;;
@@ -97,7 +113,7 @@ parse_params() {
 }
 
 parse_params "$@"
-
+setup_colors
 # script logic here
 
 TMPFILE=$(mktemp /tmp/csstoc.$(date +"%s"))
@@ -121,6 +137,7 @@ fi
 h1=0
 h2=0
 h3=0
+h4=0
 OLDIFS="$IFS"
 IFS=$'\n'
 titles=($(grep -o -n -E "$commentIdentifier\d#.*" <"${FILENAME}"))
@@ -158,6 +175,9 @@ function updateToc() {
         ;;
     3)
         local str="\t\t- "
+        ;;
+    4)
+        local str="\t\t\t- "
         ;;
     esac
     output+=("${str}${1}")
@@ -216,6 +236,11 @@ for item in "${titles[@]}"; do
         h3=$(($h3 + 1))
         _sectionNumber=$h1"."$h2"."$h3"."
         updateTitle "${item}" "${_sectionNumber}" 3
+        ;;
+    4)
+        h4=$(($h4 + 1))
+        _sectionNumber=$h1"."$h2"."$h3"."$h4"."
+        updateTitle "${item}" "${_sectionNumber}" 4
         ;;
     esac
 done
