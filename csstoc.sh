@@ -3,37 +3,45 @@
 set -Eeuo pipefail
 trap cleanup SIGINT SIGTERM ERR EXIT
 
-# usage display usage guide in the termnal
+# usage display usage guide in the terminal
 # return void
 usage() {
     cat <<EOF
-Usage: $(basename "${BASH_SOURCE[0]}") [-h] [-v] [-f] -p param_value arg1 [arg2...]
+Usage: csstoc [-h] [-v] [-s] [-f filePath ] [--no-color]
 
-Script description here.
+Script description:
+Csstoc stands for 'css table of content'.
+It prints a table of content inside a .css or .scss file, based on user set titles. 
+It is inspired by the way markdown allow generating toc.
 
 Available options:
 
--h, --help      Print this help and exit
--v, --verbose   Print script debug info
--f, --flag      Some flag description
--p, --param     Some param description
+-h, --help               Print this help and exit
+-v, --verbose            Print script debug info
+-f, --file               FilePath in which to generate a toc
+-s, --standart-output    Print result to standart-output
+--no-color               Disable colours in output
+
+Concatenated flags like for exemple '-vs' are not supported.
 
 In order to generate a csstoc the following conditions must apply:
-1) css document must have thos two tags inside à css block comment:
+1) the css/scss file must have thos two tags inside à block comment to delimit where toc should be placed.
 
 <-- toc -->
 <-- tocstop -->
 
-It is used to indicated where toc should start and finish.
-
 2) Titles are identified like this:
-level 1 Title:
-/*1# some content...
+level 1 Title
+/*1# Title's name
 
-Level 2 Title:
-/*2# some content...
+Level 2 Title
+/*2# Title's name
 
-etc.
+Level 3 Title
+/*3# Title's name
+
+Level 4 Title
+/*4# Title's name
 EOF
 }
 
@@ -97,8 +105,8 @@ parseParams() {
             ;;
         -v | --verbose) set -x ;;
         --no-color) NO_COLOR=1 ;;
-        -s) standartOuput=true ;;
-        -p | --param) # example named parameter
+        -s | --standart-output) standartOuput=true ;;
+        -f | --file) # example named parameter
             param="${2-}"
             shift
             ;;
