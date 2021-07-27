@@ -7,18 +7,18 @@ Csstoc stands for 'css table of content'. It prints a table of content inside a 
 
 ### Available options
 
-`-h, --help` Print this help and exit 
-`-v, --verbose` Print script debug info 
-`-f, --file` FilePath in which to generate a toc 
-`-s, --standard-output` Print results to standard-output
-`--no-color` Disable colours in output.
+- `-h, --help` Print this help and exit 
+- `-v, --verbose` Print script debug info 
+- `-f, --file` FilePath in which to generate a toc 
+- `-s, --standard-output` Print results to standard-output
+- `--no-color` Disable colours in output.
 
 :warning: Concatenated flags like for example `-vs` are not supported.
 
 ### Requirements
 In order to generate a csstoc, the following conditions must apply:
 1. the css/scss file must have these two tags inside à block comment to delimit where toc should be placed.
-```css 
+``` 
 <-- toc -->
 <-- tocstop -->
 ```
