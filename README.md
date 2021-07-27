@@ -5,6 +5,8 @@
 ### Script description
 Csstoc stands for 'css table of content'. It prints a table of content inside a .css or .scss files, based on user set titles. It is inspired by the way markdown allows generating toc.
 
+#### Usage Example
+![animated usage example](example.gif)
 ### Available options
 
 - `-h, --help` Print this help and exit 

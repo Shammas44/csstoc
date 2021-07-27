@@ -77,7 +77,6 @@ die() {
         IFS="$OLDIFS"
         removeToc
         printToc
-        setLastUpdateTime
         if [ $standartOuput == true ]; then
             cat $TMPFILE
         else
