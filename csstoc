@@ -77,10 +77,10 @@ die() {
         IFS="$OLDIFS"
         removeToc
         printToc
-        if [ $standartOuput == true ]; then
-            cat $TMPFILE
+        if [ "$standartOuput" == true ]; then
+            cat "$TMPFILE"
         else
-            cat $TMPFILE >"${param}"
+            cat "$TMPFILE" >"${param}"
         fi
         cleanup
         msg "\n ${GREEN}csstoc successfully terminated${NOFORMAT}"
@@ -126,11 +126,11 @@ parseParams() {
 # @return void
 function updateTitle() {
     local _newNumber=$2
-    local _rowNumber=$(echo $1 | grep -o "^\d*")
-    local _replacement=$(echo $1 | grep -o "#.*" | grep -o -E -i "[a-z].*")
+    local _rowNumber=$(echo "$1" | grep -o "^\d*")
+    local _replacement=$(echo "$1" | grep -o "#.*" | grep -o -E -i "[a-z].*")
     local _tocReplacement="${_newNumber} ${_replacement}"
     _replacement="${commentIdentifier}${3}# \$${_newNumber} ${_replacement}"
-    sed -i '' $_rowNumber"s/.*/$_replacement/" $FILENAME
+    sed -i '' "$_rowNumber""s/.*/$_replacement/" "$FILENAME"
     updateToc "${_tocReplacement}" "${_newNumber}" "${3}"
 }
 
@@ -160,23 +160,22 @@ function updateToc() {
 # printToc refresh toc in source file
 # return void
 function printToc() {
-    local i=$(($summaryStartRowNumber + 1))
-    local size=$((${#output[@]} - 1))
+    local i=$((summaryStartRowNumber + 1))
     for value in "${output[@]}"; do
-        sed -i '' $i"s/.*/${sassComment}${value} \n/" $FILENAME
-        i=$(($i + 1))
+        sed -i '' $i"s/.*/${sassComment}${value} \n/" "$FILENAME"
+        i=$((i + 1))
     done
     # display tocstop symbol in the current file
-    sed -i '' $i"s/.*/${sassComment}${tocStopSymbol}/" $FILENAME
+    sed -i '' $i"s/.*/${sassComment}${tocStopSymbol}/" "$FILENAME"
 }
 
 # removeToc remove toc in the current file
 # return void
 function removeToc() {
-    local _diff=$((${summaryEndRowNumber} - ${summaryStartRowNumber}))
+    local _diff=$((summaryEndRowNumber - summaryStartRowNumber))
     if [ $_diff != 1 ]; then
-        local firstLineToRemove=$(($summaryStartRowNumber + 1))
-        local lastLineToRemove=$(($summaryEndRowNumber - 1))
+        local firstLineToRemove=$((summaryStartRowNumber + 1))
+        local lastLineToRemove=$((summaryEndRowNumber - 1))
         sed -i '' -e "${firstLineToRemove},${lastLineToRemove}d" "${FILENAME}"
     fi
 }
@@ -186,10 +185,10 @@ function removeToc() {
 function setLastUpdateTime() {
     local _lastTime=$(grep -o -n -E "Last update:" <"${FILENAME}")
     if [ -n "$_lastTime" ]; then
-        local _rowNumber=$(echo $_lastTime | grep -o -E "^\d*")
+        local _rowNumber=$(echo "$_lastTime" | grep -o -E "^\d*")
         local _currentTime=$(date +"%D %T")
-        _currentTime=$(echo $_currentTime | sed 's/\//:/g')
-        sed -i '' $_rowNumber"s/.*/${sassComment}Last update: $_currentTime/" $FILENAME
+        _currentTime=$(echo "$_currentTime" | sed 's/\//:/g')
+        sed -i '' "$_rowNumber""s/.*/${sassComment}Last update: $_currentTime/" "$FILENAME"
     fi
 }
 
@@ -197,8 +196,8 @@ function setLastUpdateTime() {
 parseParams "$@"
 setupColors
 
-TMPFILE=$(mktemp /tmp/csstoc.$(date +"%s"))
-cat "${param}" >>$TMPFILE
+TMPFILE=$(mktemp /tmp/csstoc."$(date +"%s")")
+cat "${param}" >>"$TMPFILE"
 
 readonly EXTENSION=$(echo "${param}" | grep -o "\..*")
 readonly FILENAME=$TMPFILE
@@ -236,17 +235,17 @@ for item in "${titles[@]}"; do
         ;;
     2)
         h2=$(($h2 + 1))
-        _sectionNumber=$h1"."$h2"."
+        _sectionNumber=$h1".$h2."
         updateTitle "${item}" "${_sectionNumber}" 2
         ;;
     3)
         h3=$(($h3 + 1))
-        _sectionNumber=$h1"."$h2"."$h3"."
+        _sectionNumber=$h1".$h2.$h3."
         updateTitle "${item}" "${_sectionNumber}" 3
         ;;
     4)
         h4=$(($h4 + 1))
-        _sectionNumber=$h1"."$h2"."$h3"."$h4"."
+        _sectionNumber=$h1".$h2.$h3.$h4."
         updateTitle "${item}" "${_sectionNumber}" 4
         ;;
     esac
