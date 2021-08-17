@@ -1,21 +1,20 @@
 # Csstoc: Work in progress 
 :warning: This bash script is attended for Unix/Linux-based OS only.
 ## Usages 
-`csstoc [-h] [-v] [-s] [--css | --sass] [-f filePath ] [--no-color]`
+`csstoc [-v] [--no-color] [-h] [--css | --sass] [-s] [-f filePath ]`
 ### Script description
 Csstoc stands for 'css table of content'. It prints a table of content inside a .css or .scss files, based on user set titles. It is inspired by the way markdown allows generating toc.
 
 #### Usage Example
 ![animated usage example](example.gif)
 ### Available options
-
-- `-h, --help` Print this help and exit 
 - `-v, --verbose` Print script debug info 
-- `-f, --file` FilePath in which to generate a toc 
-- `-s, --standard-output` Print results to standard-output
 - `--no-color` Disable colours in output.
+- `-h, --help` Print this help and exit 
 - `--css` Force csstoc to watch for css comments to build the toc   
 - `--sass` Force csstoc to watch for sass/scss/less comments to build the toc   
+- `-s, --standard-output` Print results to standard-output
+- `-f, --file` FilePath in which to generate a toc 
 
 :warning: Concatenated flags like for example `-vs` are not supported.
 
