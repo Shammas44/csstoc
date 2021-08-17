@@ -7,7 +7,7 @@ trap cleanup SIGINT SIGTERM ERR EXIT
 # return void
 usage() {
     cat <<EOF
-Usage: csstoc [-h] [-v] [-s] [-f filePath ] [--no-color]
+Usage: csstoc [-h] [-v] [-s] [--css | --sass] [-f filePath ] [--no-color]
 
 Script description:
 Csstoc stands for 'css table of content'.
@@ -21,6 +21,8 @@ Available options:
 -f, --file               FilePath in which to generate a toc
 -s, --standart-output    Print result to standart-output
 --no-color               Disable colours in output
+--css                    csstoc watch css comments to build the toc   
+--sass                   csstoc watch sass/scss/less comments to build the toc   
 
 Concatenated flags like for exemple '-vs' are not supported.
 
@@ -88,13 +90,37 @@ die() {
     exit "$_code"
 }
 
-# parse_patams
+# setExtension allow to force interpreting file as an other file type
+# @param $1 boolean
+# return void
+function setExtension() {
+    if [ "$1" = true ]; then
+        readonly EXTENSION='.css'
+    elif [ "$1" = false ]; then
+        readonly EXTENSION='.scss'
+    else
+        readonly EXTENSION=$(echo "${param}" | grep -o "\..*")
+    fi
+
+    if [ "$EXTENSION" == '.css' ]; then
+        commentIdentifier='\/\*'
+        sassComment=''
+    elif [ "$EXTENSION" == '.scss' ] || [ "$EXTENSION" == '.sass' ] || [ "$EXTENSION" == '.less' ]; then
+        commentIdentifier='\/\/'
+        sassComment='\/\/ '
+    else
+        die "Unknown extension $EXTENSION"
+    fi
+}
+
+# parse_params
 # @param $1 list on all flag set
 # @param $2 arguments to the -p flag
 # @return 0
 parseParams() {
     param=''
     standartOuput=false
+    local _forceFileType
 
     while :; do
         case "${1-}" in
@@ -104,9 +130,12 @@ parseParams() {
             ;;
         -v | --verbose) set -x ;;
         --no-color) NO_COLOR=1 ;;
+        --css) _forceFileType=true ;;
+        --sass) _forceFileType=false ;;
         -s | --standart-output) standartOuput=true ;;
-        -f | --file) # example named parameter
+        -f | --file)
             param="${2-}"
+            setExtension "$_forceFileType"
             shift
             ;;
         -?*) die "Unknown option: $1" ;;
@@ -199,20 +228,10 @@ setupColors
 TMPFILE=$(mktemp /tmp/csstoc."$(date +"%s")")
 cat "${param}" >>"$TMPFILE"
 
-readonly EXTENSION=$(echo "${param}" | grep -o "\..*")
+# readonly EXTENSION=$(echo "${param}" | grep -o "\..*")
 readonly FILENAME=$TMPFILE
 tocStartSymbol="<-- toc -->"
 tocStopSymbol="<-- tocstop -->"
-
-if [ "$EXTENSION" == '.css' ]; then
-    commentIdentifier='\/\*'
-    sassComment=''
-elif [ "$EXTENSION" == '.scss' ] || [ "$EXTENSION" == '.sass' ]; then
-    commentIdentifier='\/\/'
-    sassComment='\/\/ '
-else
-    die "Unknown extension $EXTENSION"
-fi
 
 h1=0
 h2=0
