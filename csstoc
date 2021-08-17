@@ -21,8 +21,8 @@ Available options:
 -f, --file               FilePath in which to generate a toc
 -s, --standart-output    Print result to standart-output
 --no-color               Disable colours in output
---css                    csstoc watch css comments to build the toc   
---sass                   csstoc watch sass/scss/less comments to build the toc   
+--css                    Force csstoc to watch for css comments to build the toc   
+--sass                   Force csstoc to watch for sass/scss/less comments to build the toc   
 
 Concatenated flags like for exemple '-vs' are not supported.
 
