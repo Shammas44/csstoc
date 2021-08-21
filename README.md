@@ -18,7 +18,7 @@ Csstoc stands for 'css table of content'. It prints a table of content inside a 
 
 ### Limitations
 - :warning: Concatenated flags like for example `-vs` are not supported.
-- It is not possible to mix both `//`and `/*`comments type to generate a toc    
+- It is not possible to mix both `//`and `/*` comments type to generate a toc    
 
 ### Requirements
 In order to generate a csstoc, the following conditions must apply:
@@ -27,7 +27,7 @@ In order to generate a csstoc, the following conditions must apply:
 <-- toc -->
 <-- tocstop -->
 ```
-2. Titles are identified like this in `css`files:
+2. Titles are identified like this in `css` files:
 - Level 1 Title 
 `/*1# Title's name`
 
@@ -54,12 +54,12 @@ In order to generate a csstoc, the following conditions must apply:
 `//4# Title's name`
 ## Command line installation
 1. Download the file called `csstoc`and make it executable
-```bash
+```
 wget https://raw.githubusercontent.com/Shammas44/csstoc/main/csstoc
 chmod +x csstoc
 ```
 2. Store the newly created file somewhere available to your `$PATH` variable.
-```bash
+```
 mv csstoc <path available to your $PATH variable>
 ```
 
