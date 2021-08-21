@@ -16,7 +16,9 @@ Csstoc stands for 'css table of content'. It prints a table of content inside a 
 - `-s, --standard-output` Print results to standard-output
 - `-f, --file` FilePath in which to generate a toc 
 
-:warning: Concatenated flags like for example `-vs` are not supported.
+### Limitations
+- :warning: Concatenated flags like for example `-vs` are not supported.
+- It is not possible to mix both `//`and `/*`comments type to generate a toc    
 
 ### Requirements
 In order to generate a csstoc, the following conditions must apply:
@@ -25,7 +27,7 @@ In order to generate a csstoc, the following conditions must apply:
 <-- toc -->
 <-- tocstop -->
 ```
-2. Titles are identified like this:
+2. Titles are identified like this in `css`files:
 - Level 1 Title 
 `/*1# Title's name`
 
@@ -38,10 +40,28 @@ In order to generate a csstoc, the following conditions must apply:
 - Level 4 Title 
 `/*4# Title's name`
 
-## Installation
-1. copy and paste the content of the `csstoc`file into a new file on your system and called it `csstoc`.
-2. Make it executable with the command line `chmod +x csstoc`
-3. Store the newly created file somewhere available to your `$PATH` variable.
+3. Titles are identified like this in `scss, sass, less`files:
+- Level 1 Title 
+`//1# Title's name`
+
+- Level 2 Title 
+`//2# Title's name`
+
+- Level 3 Title 
+`//3# Title's name`
+
+- Level 4 Title 
+`//4# Title's name`
+## Command line installation
+1. Download the file called `csstoc`and make it executable
+```bash
+wget https://raw.githubusercontent.com/Shammas44/csstoc/main/csstoc
+chmod +x csstoc
+```
+2. Store the newly created file somewhere available to your `$PATH` variable.
+```bash
+mv csstoc <path available to your $PATH variable>
+```
 
 ### Bonus: easily accessible csstoc in Visual Studio Code
 1. Install the vs code extension [Command Runner](https://github.com/edonet/vscode-command-runner).

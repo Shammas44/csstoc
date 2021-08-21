@@ -32,18 +32,31 @@ In order to generate a csstoc the following conditions must apply:
 <-- toc -->
 <-- tocstop -->
 
-2) Titles are identified like this:
-level 1 Title
+2) Titles are identified like this in cssfiles:
+- Level 1 Title 
 /*1# Title's name
 
-Level 2 Title
+- Level 2 Title 
 /*2# Title's name
 
-Level 3 Title
+- Level 3 Title 
 /*3# Title's name
 
-Level 4 Title
+- Level 4 Title 
 /*4# Title's name
+
+3) Titles are identified like this in scss, sass, less files:
+- Level 1 Title 
+//1# Title's name
+
+- Level 2 Title 
+//2# Title's name
+
+- Level 3 Title 
+//3# Title's name
+
+- Level 4 Title 
+//4# Title's name
 EOF
 }
 
