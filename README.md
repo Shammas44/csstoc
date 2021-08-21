@@ -40,7 +40,7 @@ In order to generate a csstoc, the following conditions must apply:
 - Level 4 Title 
 `/*4# Title's name`
 
-3. Titles are identified like this in `scss, sass, less`files:
+3. Titles are identified like this in `scss, sass, less` files:
 - Level 1 Title 
 `//1# Title's name`
 
@@ -53,7 +53,7 @@ In order to generate a csstoc, the following conditions must apply:
 - Level 4 Title 
 `//4# Title's name`
 ## Command line installation
-1. Download the file called `csstoc`and make it executable
+1. Download the file called `csstoc` and make it executable
 ```
 wget https://raw.githubusercontent.com/Shammas44/csstoc/main/csstoc
 chmod +x csstoc
